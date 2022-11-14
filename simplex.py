@@ -1,4 +1,8 @@
+import math
+
 import numpy as np
+
+MIN_VALUE: list = list()
 
 
 def create_simplex_table(c: np.ndarray, b: np.ndarray, A: np.ndarray) -> np.ndarray:
@@ -70,17 +74,18 @@ def reformat_table(table: np.ndarray, b, x_index, fic_x) -> np.ndarray:
 
 
 def branch_and_bounds(table: np.ndarray) -> (list, float):
+    nonlocal MIN_VALUE
     table1, answer, estimation = simplex_method(table)
     print_table(table)
+    if len(MIN_VALUE) != 0 and int(estimation) <= MIN_VALUE[0][1]:
+        return
+    isInteger: bool = True
     for i, x in enumerate(answer):
         if x - int(x) > 10e-6:
             first_table = reformat_table(table, int(x), i, 1)
             second_table = reformat_table(table, int(x) + 1, i, -1)
-            table1, answer1, estimation1 = simplex_method(first_table)
-            table2, answer2, estimation2 = simplex_method(second_table)
-            print(answer1, estimation1)
-            print_table(table1)
-
-            print(answer2, estimation2)
-            print_table(table2)
-            # TODO: implement this
+            branch_and_bounds(first_table)
+            branch_and_bounds(second_table)
+            isInteger = False
+    if isInteger and (len(MIN_VALUE) == 0 or estimation > MIN_VALUE[0][1]):
+        MIN_VALUE[0] = (answer, estimation)

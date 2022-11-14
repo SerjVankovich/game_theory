@@ -77,7 +77,7 @@ def branch_and_bounds(table: np.ndarray) -> (list, float):
     nonlocal MIN_VALUE
     table1, answer, estimation = simplex_method(table)
     print_table(table)
-    if len(MIN_VALUE) != 0 and int(estimation) < MIN_VALUE[0][1]:
+    if len(MIN_VALUE) != 0 and int(estimation) <= MIN_VALUE[0][1]:
         return
     isInteger: bool = True
     for i, x in enumerate(answer):
@@ -89,4 +89,3 @@ def branch_and_bounds(table: np.ndarray) -> (list, float):
             isInteger = False
     if isInteger and (len(MIN_VALUE) == 0 or estimation > MIN_VALUE[0][1]):
         MIN_VALUE[0] = (answer, estimation)
-

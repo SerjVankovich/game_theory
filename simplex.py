@@ -2,7 +2,7 @@ import math
 
 import numpy as np
 
-MIN_VALUE: list = list()
+MIN_VALUE: list = [0, 0]
 
 
 def create_simplex_table(c: np.ndarray, b: np.ndarray, A: np.ndarray) -> np.ndarray:
@@ -27,7 +27,6 @@ def print_table(table: np.ndarray) -> None:
 
 def create_variables(basis: list, table: np.ndarray) -> list:
     answer: list = [0] * len(basis)
-    print(basis)
     for i, x in enumerate(basis):
         if x != -1 and x < len(basis):
             answer[x] = table[i, 0]
@@ -38,7 +37,6 @@ def simplex_method(table: np.ndarray) -> (np.ndarray, list, float):
     table_to_work = np.copy(table)
     basis = [-1] * (len(table_to_work) - 1)
     while True:
-        print(table_to_work[-1])
         min_col: int = np.argmin(table_to_work[-1]).min()
         if table_to_work[-1, min_col] >= 0:
             return table_to_work, create_variables(basis, table_to_work), table_to_work[-1, 0]
@@ -73,19 +71,32 @@ def reformat_table(table: np.ndarray, b, x_index, fic_x) -> np.ndarray:
     return result
 
 
-def branch_and_bounds(table: np.ndarray) -> (list, float):
-    nonlocal MIN_VALUE
+def branches_and_bounds(table: np.ndarray):
+    global MIN_VALUE
     table1, answer, estimation = simplex_method(table)
-    print_table(table)
-    if len(MIN_VALUE) != 0 and int(estimation) <= MIN_VALUE[0][1]:
+    print(answer)
+    print(MIN_VALUE)
+    print(estimation)
+    print()
+    if int(estimation) <= MIN_VALUE[1]:
         return
     isInteger: bool = True
     for i, x in enumerate(answer):
-        if x - int(x) > 10e-6:
+        if x - int(x) > 10e-4:
             first_table = reformat_table(table, int(x), i, 1)
             second_table = reformat_table(table, int(x) + 1, i, -1)
-            branch_and_bounds(first_table)
-            branch_and_bounds(second_table)
+            branches_and_bounds(first_table)
+            branches_and_bounds(second_table)
             isInteger = False
-    if isInteger and (len(MIN_VALUE) == 0 or estimation > MIN_VALUE[0][1]):
-        MIN_VALUE[0] = (answer, estimation)
+    if isInteger and estimation > MIN_VALUE[1]:
+        MIN_VALUE = [answer, estimation]
+
+
+c = np.array([-2, -3])
+b = np.array([24, 22])
+A = np.array([
+    [3, 4, 1, 0],
+    [2, 5, 0, 1]
+])
+
+branches_and_bounds(create_simplex_table(c, b, A))
